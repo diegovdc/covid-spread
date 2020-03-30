@@ -14,6 +14,6 @@
     "vega": "^5.3.5",
     "vega-embed": "^4.0.0",
     "vega-lite": "^3.2.1",
-    "vega-tooltip": "^0.22.1"
+    "vega-tooltip": "^0.18.1"
   }
 }

@@ -43,33 +43,21 @@
    countries))
 
 (defn hello-world []
-  [:div {:style {:width "500px"}}
+  [:div
    [:h1 "Tabla comparativa del aumento diario de casos de COVID-19"]
-   [oz/vega-lite
-    {:data {:values (prepare-data "Mexico" "Spain" "US" "Italy")}
-     :encoding {:x {:field "Día" :type "quantitative"}
-                :y {:field "Crecimiento" :type "quantitative"}
-                :color {:field "País" :type "nominal"}}
-     :mark "line"
-     :width 500
-     :height 500
-     :axis {:offset 1}}]
+   [:p "Esta tabla describe la taza de crecimiento diaria de casos. Los valores se obtienen diviendo el numero de casos de cada día sobre el numero de casos del día anterior. Si el valor es 1 eso quiere decir que no hay casos nuevos. Mientras mayor sea el valor más rápido se esparce el virus en la población."]
+   [:div
+    [oz/vega-lite
+     {:data {:values (prepare-data "Mexico" "Spain" "US" "Italy" "China")}
+      :encoding {:x {:field "Día" :type "quantitative"}
+                 :y {:field "Crecimiento" :type "quantitative"}
+                 :color {:field "País" :type "nominal"}}
+      :mark "line"
+      :width 500
+      :height 400}]]
+   [:a {:href "https://github.com/pomber/covid19"
+        :target "_blank"} "Fuente de los datos"]
    ])
-(println )
-(-> @app-state
-    :data
-    calculate-growth-rate
-    (get "Mexico")
-    :growth
-    (->> (map-indexed (fn [i val]
-                        {:dia (inc i)
-                         :crecimiento val}))))
-
-(-> @app-state
-    :data
-    calculate-growth-rate
-    (get "Mexico")
-    )
 
 (defn start []
   (-> "https://pomber.github.io/covid19/timeseries.json"
