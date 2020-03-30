@@ -1,0 +1,5 @@
+node_modules/
+.shadow-cljs/
+public/
+!public
+! public/index.html
