@@ -1,1 +1,7 @@
 /* some style */
+.selected-countries__remove {
+    position: relative;
+    transform: translateY(-1px);
+    left: -1px;
+    display: inline-block;
+}

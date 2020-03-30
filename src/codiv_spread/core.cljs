@@ -6,7 +6,8 @@
 ;; define your app data so that it doesn't get over-written on reload
 
 (defonce app-state (atom {:text "Tabla comparativa"
-                          :data {}}))
+                          :data {}
+                          :selected-countries #{"Mexico"}}))
 
 (defn calculate-growth-rate* [country-data]
   (reduce (fn [{:keys [confirmed growth]} val*]
@@ -42,14 +43,33 @@
                               "Crecimiento" val})))))
    countries))
 
-(defn hello-world []
+(defn app []
   [:div
    [:h1 "Tabla comparativa del aumento diario de casos de COVID-19"]
    [:p "Esta tabla describe la taza de crecimiento diaria de casos. Los valores se obtienen diviendo el numero de casos de cada día sobre el numero de casos del día anterior. Si el valor es 1 eso quiere decir que no hay casos nuevos. Mientras mayor sea el valor más rápido se esparce el virus en la población."]
    [:p "Nota: cada una de las gráficas comienza al día siguiente a partir de que se detectó el primer en caso en el país correspondiente."]
+   [:select
+    {:on-change (fn [e] (->> e
+                            .-target
+                            .-value
+                            (swap! app-state update :selected-countries conj)))}
+    (->> @app-state :data keys
+         sort
+         (map
+          (fn [c] [:option {:key c} c])))]
+   [:div (->> @app-state :selected-countries
+              (map (fn [c]
+                     [:button
+                      {:key c
+                       :on-click
+                       (fn [_]
+                         (swap! app-state update :selected-countries
+                                (fn [cs] (set (remove #(= % c) cs)))))}
+                      [:span {:class "selected-countries__remove"} "x   "]
+                      c])))]
    [:div
     [oz/vega-lite
-     {:data {:values (prepare-data "Mexico" "Spain" "US" "Italy" "China")}
+     {:data {:values (apply prepare-data (@app-state :selected-countries))}
       :encoding {:x {:field "Día" :type "quantitative"}
                  :y {:field "Crecimiento" :type "quantitative"}
                  :color {:field "País" :type "nominal"}}
@@ -67,7 +87,7 @@
       (.then #(swap! app-state assoc :data (->> % js->clj
                                                 (map walk/keywordize-keys)
                                                 (into {})))))
-  (reagent/render-component [hello-world]
+  (reagent/render-component [app]
                             (. js/document (getElementById "app"))))
 
 (defn ^:export init []
