@@ -1,5 +1,9 @@
 node_modules/
 .shadow-cljs/
-public/
-!public
-! public/index.html
+public/**/*
+!public/index.html
+!public/css/
+!public/css/style.css
+!public/js/
+!public/js/compiled/
+!public/js/compiled/main.js
