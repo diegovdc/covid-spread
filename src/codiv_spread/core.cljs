@@ -46,6 +46,7 @@
   [:div
    [:h1 "Tabla comparativa del aumento diario de casos de COVID-19"]
    [:p "Esta tabla describe la taza de crecimiento diaria de casos. Los valores se obtienen diviendo el numero de casos de cada día sobre el numero de casos del día anterior. Si el valor es 1 eso quiere decir que no hay casos nuevos. Mientras mayor sea el valor más rápido se esparce el virus en la población."]
+   [:p "Nota: cada una de las gráficas comienza al día siguiente a partir de que se detectó el primer en caso en el país correspondiente."]
    [:div
     [oz/vega-lite
      {:data {:values (prepare-data "Mexico" "Spain" "US" "Italy" "China")}
