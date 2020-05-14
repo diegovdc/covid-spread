@@ -9,30 +9,33 @@
                           :data {}
                           :selected-countries #{"Mexico"}}))
 
-(defn calculate-growth-rate* [country-data]
-  (reduce (fn [{:keys [confirmed growth]} val*]
-            {:confirmed (conj confirmed (val* :confirmed))
+(defn calculate-growth-rate* [country-data key]
+  (reduce (fn [{:keys [growth] :as acc} val*]
+            {key (conj (acc key) (val* key))
              :growth (conj growth
-                           (if (> (last confirmed) 0)
-                             (float (/ (val* :confirmed)
-                                       (last confirmed)))
+                           (if (> (last (acc key)) 0)
+                             (float (/ (val* key)
+                                       (last (acc key))))
                              0))})
-          {:confirmed [0]
+          {key [0]
            :growth [0]}
           country-data))
 
-(defn calculate-growth-rate [countries]
+(-> @app-state :data (get "Mexico") (calculate-growth-rate* :deaths))
+
+(defn calculate-growth-rate [countries key]
   (into {}
         (map (fn [[country data]]
-               [country (calculate-growth-rate* data)])
+               [country (calculate-growth-rate* data key)])
              countries)))
+
 (defn spy [x] (println x) x)
 
-(defn prepare-data [& countries]
+(defn prepare-data [key & countries]
   (mapcat (fn [country]
          (-> @app-state
              :data
-             calculate-growth-rate
+             (calculate-growth-rate key)
              (get country)
              :growth
              (->>
@@ -42,6 +45,7 @@
                               "Día" i
                               "Crecimiento" val})))))
    countries))
+
 
 (defn app []
   [:div
@@ -67,9 +71,22 @@
                                 (fn [cs] (set (remove #(= % c) cs)))))}
                       [:span {:class "selected-countries__remove"} "x   "]
                       c])))]
+   [:h2 "Casos"]
    [:div
     [oz/vega-lite
-     {:data {:values (apply prepare-data (@app-state :selected-countries))}
+     {:data {:values (apply (partial prepare-data :confirmed)
+                            (@app-state :selected-countries))}
+      :encoding {:x {:field "Día" :type "quantitative"}
+                 :y {:field "Crecimiento" :type "quantitative"}
+                 :color {:field "País" :type "nominal"}}
+      :mark "line"
+      :width 500
+      :height 400}]]
+   [:h2 "Muertes"]
+   [:div
+    [oz/vega-lite
+     {:data {:values (apply (partial prepare-data :deaths)
+                            (@app-state :selected-countries))}
       :encoding {:x {:field "Día" :type "quantitative"}
                  :y {:field "Crecimiento" :type "quantitative"}
                  :color {:field "País" :type "nominal"}}
@@ -77,8 +94,7 @@
       :width 500
       :height 400}]]
    [:a {:href "https://github.com/pomber/covid19"
-        :target "_blank"} "Fuente de los datos"]
-   ])
+        :target "_blank"} "Fuente de los datos"]])
 
 (defn start []
   (-> "https://pomber.github.io/covid19/timeseries.json"
